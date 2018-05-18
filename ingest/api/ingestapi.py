@@ -246,6 +246,15 @@ class IngestApi:
         if r.status_code == requests.codes.created or r.status_code == requests.codes.accepted:
             return json.loads(r.text)
 
+    def create_entity(self, submissionUrl, jsonObject, entityType, token=None):
+        auth_headers = {'Content-type': 'application/json',
+                        'Authorization': token
+                        }
+        submission_url = self.submission_links[submissionUrl][entityType]['href'].rsplit("{")[0]
+        r = requests.post(submissionUrl, data=jsonObject, headers=auth_headers)
+        if r.status_code == requests.codes.created or r.status_code == requests.codes.accepted:
+            return json.loads(r.text)
+
     # given a HCA object return the URI for the object from ingest
     def getObjectId(self, entity):
         if "_links" in entity:
