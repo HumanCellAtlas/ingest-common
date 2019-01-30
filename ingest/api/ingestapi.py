@@ -302,7 +302,7 @@ class IngestApi:
         return self.createEntity(submissionUrl, jsonObject, 'submissionManifest')
 
     def patch(self, url, patch):
-        r = requests.patch(url, data=json.dumps(patch))
+        r = requests.patch(url, json=patch)
         r.raise_for_status()
         return r
 
@@ -329,8 +329,6 @@ class IngestApi:
         time.sleep(0.001)
         r = requests.post(fileSubmissionsUrl, data=json.dumps(fileToCreateObject), headers=self.headers)
 
-        r.raise_for_status()
-
         # TODO Investigate why core is returning internal server error
         if r.status_code == requests.codes.conflict or r.status_code == requests.codes.internal_server_error:
             searchFiles = self.getFileBySubmissionUrlAndFileName(submissionUrl, file_name)
@@ -349,6 +347,8 @@ class IngestApi:
                 time.sleep(0.001)
                 r = requests.patch(fileUrl, data=json.dumps({'content': content}), headers=self.headers)
                 self.logger.debug(f'Updating existing content of file {fileUrl}.')
+
+        r.raise_for_status()
 
         return r.json()
 
