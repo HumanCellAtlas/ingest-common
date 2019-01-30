@@ -5,6 +5,7 @@ import requests
 format = '[%(filename)s:%(lineno)s - %(funcName)20s() ] %(asctime)s - %(name)s - %(levelname)s - %(message)s'
 logging.basicConfig(format=format)
 
+
 class IngestSubmitter(object):
 
     def __init__(self, ingest_api):
@@ -63,7 +64,12 @@ class IngestSubmitter(object):
     def _add_entities(self, entities, submission):
         for entity in entities:
             if not entity.is_reference:
-                submission.add_entity(entity)
+                try:
+                    submission.add_entity(entity)
+                except:
+                    error_message = f'error in entity [{entity.type}]:\n{entity.content}'
+                    self.logger.error(error_message)
+                    raise
 
 
 class EntityLinker(object):
@@ -444,13 +450,14 @@ class EntityMap(object):
 
         for entity in self.get_entities():
             count = count + len(entity.direct_links)
-        return count;
+        return count
 
 
 class Error(Exception):
     def __init__(self, code, message):
         super(Error, self).__init__(message)
         self.code = code
+        self.message = message
 
 
 class InvalidEntityIngestLink(Error):

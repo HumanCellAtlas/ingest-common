@@ -134,6 +134,14 @@ class IngestApi:
         r.raise_for_status()
         return r.json()
 
+    def getFileBySubmissionUrlAndFileName(self, submissionUrl, fileName):
+        searchUrl = self._get_url_for_link(self.url + '/files/search', 'findBySubmissionEnvelopesInAndFileName')
+        searchUrl = searchUrl.replace('{?submissionEnvelope,fileName}', '')
+        r = requests.get(searchUrl, params={'submissionEnvelope': submissionUrl, 'fileName': fileName})
+        if r.status_code == requests.codes.ok:
+            return r.json()
+        return None
+
     def getSubmissionEnvelope(self, submissionUrl):
         r = requests.get(submissionUrl, headers=self.headers)
         if r.status_code == requests.codes.ok:
@@ -310,16 +318,38 @@ class IngestApi:
         # TODO: getting a submission's links should look in the cache before retrieving it from the API
 
         fileSubmissionsUrl = self.get_link_in_submisssion(submissionUrl, 'files')
+
         fileSubmissionsUrl = fileSubmissionsUrl + "/" + quote(file_name)
-        self.logger.debug("posting " + submissionUrl)
 
         fileToCreateObject = {
             "fileName": file_name,
-            "content": json.loads(jsonObject) # TODO jsonObject should be a dict()
+            "content": json.loads(jsonObject)  # TODO jsonObject should be a dict()
         }
 
+        time.sleep(0.001)
         r = requests.post(fileSubmissionsUrl, data=json.dumps(fileToCreateObject), headers=self.headers)
+
         r.raise_for_status()
+
+        # TODO Investigate why core is returning internal server error
+        if r.status_code == requests.codes.conflict or r.status_code == requests.codes.internal_server_error:
+            searchFiles = self.getFileBySubmissionUrlAndFileName(submissionUrl, file_name)
+
+            if searchFiles and searchFiles.get('_embedded') and searchFiles['_embedded'].get('files'):
+                fileInIngest = searchFiles['_embedded'].get('files')[0]
+                content = fileInIngest.get('content')
+                newContent = json.loads(jsonObject)
+
+                if content:
+                    content.update(newContent)
+                else:
+                    content = newContent
+
+                fileUrl = fileInIngest['_links']['self']['href']
+                time.sleep(0.001)
+                r = requests.patch(fileUrl, data=json.dumps({'content': content}), headers=self.headers)
+                self.logger.debug(f'Updating existing content of file {fileUrl}.')
+
         return r.json()
 
     def createEntity(self, submissionUrl, jsonObject, entityType, token=None):
@@ -330,8 +360,8 @@ class IngestApi:
 
         self.logger.debug("posting " + submissionUrl)
         r = requests.post(submissionUrl, data=jsonObject, headers=auth_headers)
-        if r.status_code == requests.codes.created or r.status_code == requests.codes.accepted:
-            return json.loads(r.text)
+        r.raise_for_status()
+        return r.json()
 
     # given a HCA object return the URI for the object from ingest
     def getObjectId(self, entity):
@@ -395,9 +425,9 @@ class IngestApi:
             r = None
             
             try:
+                time.sleep(0.001)
                 r = func(*args)
                 r.raise_for_status()
-
             except HTTPError:
                 self.logger.error("\nResponse was: " + str(r.status_code) + " (" + r.text + ")")
                 tries += 1
