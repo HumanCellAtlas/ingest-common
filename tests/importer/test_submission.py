@@ -86,6 +86,7 @@ class SubmissionTest(TestCase):
         entity_map = MagicMock('entity_map')
         entity_map.count_total = MagicMock(return_value=total_count)
         entity_map.count_entities_of_type = lambda entity: count_per_entity.get(entity)
+        entity_map.count_links = MagicMock(return_value=total_count)
 
         # when:
         submission.define_manifest(entity_map)
@@ -105,6 +106,7 @@ class SubmissionTest(TestCase):
         self.assertEqual(count_per_entity['file'], submitted_json['expectedFiles'])
         self.assertEqual(count_per_entity['protocol'], submitted_json['expectedProtocols'])
         self.assertEqual(count_per_entity['project'], submitted_json['expectedProjects'])
+        self.assertEqual(total_count, submitted_json['expectedLinks'])
 
 
 def _create_spreadsheet_json():
@@ -228,6 +230,7 @@ class IngestSubmitterTest(TestCase):
         submission.define_manifest = MagicMock()
         submission.add_entity = MagicMock()
         submission.link_entity = MagicMock()
+        submission.manifest = {}
         submission_constructor.return_value = submission
         return submission
 
