@@ -444,8 +444,7 @@ class EntityMap(object):
         return len(self.get_new_entities_of_type(type))
 
     def count_links(self):
-        count = 0;
-
+        count = 0
         for entity in self.get_entities():
             count = count + len(entity.direct_links)
         return count
