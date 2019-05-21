@@ -61,13 +61,15 @@ class IngestSubmitter(object):
 
     def _add_entities(self, entities, submission):
         for entity in entities:
-            if not entity.is_reference:
-                try:
+            try:
+                if entity.is_reference:
+                    submission.update_entity(entity)
+                else:
                     submission.add_entity(entity)
-                except:
-                    error_message = f'error in entity [{entity.type}]:\n{entity.content}'
-                    self.logger.error(error_message)
-                    raise
+            except Exception as e:
+                error_message = f'error ({str(e)}) in entity [{entity.type}]:\n{entity.content}'
+                self.logger.error(error_message)
+                raise
 
 
 class EntityLinker(object):
@@ -78,6 +80,9 @@ class EntityLinker(object):
 
     def process_links_from_spreadsheet(self, entity_map):
         for entity in entity_map.get_entities():
+            if entity.is_reference:
+                continue
+
             self._validate_entity_links(entity_map, entity)
             self._generate_direct_links(entity_map, entity)
 
@@ -307,6 +312,31 @@ class Submission(object):
             response = self.ingest_api.createProject(self.submission_url, json.dumps(entity.content))
         else:
             response = self.ingest_api.createEntity(self.submission_url, json.dumps(entity.content), link_name)
+
+        entity.ingest_json = response
+        self.metadata_dict[entity.type + '.' + entity.id] = entity
+
+        return entity
+
+    def update_entity(self, entity: Entity):
+        link_name = self.ENTITY_LINK[entity.type]
+
+        # TODO: how to get filename?!!!
+        if entity.type == 'file':
+            file_name = entity.content['file_core']['file_name']
+            response = self.ingest_api.createFile(self.submission_url,
+                                                  file_name,
+                                                  json.dumps(entity.content),
+                                                  uuid=entity.id)
+        elif entity.type == 'project':
+            response = self.ingest_api.createProject(self.submission_url,
+                                                     json.dumps(
+                                                         entity.content),
+                                                     uuid=entity.id)
+        else:
+            response = self.ingest_api.createEntity(self.submission_url,
+                                                    json.dumps(entity.content),
+                                                    link_name, uuid=entity.id)
 
         entity.ingest_json = response
         self.metadata_dict[entity.type + '.' + entity.id] = entity

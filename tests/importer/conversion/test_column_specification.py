@@ -248,6 +248,14 @@ class ColumnSpecificationTest(TestCase):
                                           DataType.STRING, identity=True, external_reference=True)
 
         # expect:
+        self.assertEqual(ConversionType.LINKED_EXTERNAL_REFERENCE, column_spec.get_conversion_type())
+
+    def test_get_conversion_type_external_reference_identity(self):
+        # given:
+        column_spec = ColumnSpecification('account.uuid', 'account', 'profile_type',
+                                          DataType.STRING, identity=True, external_reference=True)
+
+        # expect:
         self.assertEqual(ConversionType.EXTERNAL_REFERENCE, column_spec.get_conversion_type())
 
     def test_get_conversion_type_linking_detail(self):
