@@ -318,6 +318,7 @@ class Submission(object):
 
         return entity
 
+    # TODO refactor
     def update_entity(self, entity: Entity):
         link_name = self.ENTITY_LINK[entity.type]
 
