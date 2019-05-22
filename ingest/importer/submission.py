@@ -13,6 +13,7 @@ class IngestSubmitter(object):
         self.ingest_api = ingest_api
         self.logger = logging.getLogger(__name__)
         self.PROGRESS_CTR = 50
+        self.logger = logging.getLogger(__name__)
 
     def submit(self, entity_map, submission_url):
         submission = Submission(self.ingest_api, submission_url)
@@ -63,7 +64,8 @@ class IngestSubmitter(object):
         for entity in entities:
             try:
                 if entity.is_reference:
-                    submission.update_entity(entity)
+                    if entity.type != 'file':  # TODO updating files is not supported yet
+                        submission.update_entity(entity)
                 else:
                     submission.add_entity(entity)
             except Exception as e:
@@ -244,7 +246,6 @@ class EntityLinker(object):
 
 
 class Entity(object):
-
     def __init__(self, entity_type, entity_id, content, ingest_json=None, links_by_entity=None,
                  direct_links=None, is_reference=False, linking_details=None, concrete_type=None, spreadsheet_location=None):
         self.type = entity_type
@@ -297,6 +298,7 @@ class Submission(object):
         self.submission_url = submission_url
         self.metadata_dict = {}
         self.manifest = None
+        self.logger = logging.getLogger(__name__)
 
     def get_submission_url(self):
         return self.submission_url
@@ -306,7 +308,13 @@ class Submission(object):
         return entity
 
     def update_entity(self, entity: Entity):
-        self._create_entity(entity, entity.id)
+        try:
+            self._create_entity(entity, entity.id)
+        except requests.HTTPError as e:
+            if e.response.status_code == requests.codes.bad_request:  # Bad Request
+                self.logger.warning(f'Failed to create entity as there is no diff. {e.response.text}')
+            else:
+                raise
         return entity
 
     def _create_entity(self, entity, uuid=None):

@@ -252,45 +252,6 @@ class IngestSubmitterTest(TestCase):
         submission.link_entity.assert_called_with(linked_product, user, relationship='wish_list')
         ingest_api.patch.assert_called_once()
 
-    @patch('ingest.importer.submission.Submission')
-    def test_submit_linked_entity(self, submission_constructor):
-        # given:
-        ingest_api = MagicMock('ingest_api')
-        ingest_api.getSubmissionEnvelope = MagicMock()
-        ingest_api.patch = MagicMock()
-        ingest_api.get_link_from_resource = MagicMock()
-        submission = self._mock_submission(submission_constructor)
-
-        # and:
-        user = Entity('user', 'user_1', {})
-        entity_map = EntityMap(user)
-
-        # and:
-        link_to_user = {
-            'entity': 'user',
-            'id': 'user_1',
-            'relationship': 'wish_list'
-        }
-        linked_product = Entity('product', 'product_1', {},
-                                direct_links=[link_to_user])
-        project = Entity('project', 'id', {})
-        entity_map.add_entity(linked_product)
-        entity_map.add_entity(project)
-
-        # when:
-        submitter = IngestSubmitter(ingest_api)
-        submitter.PROGRESS_CTR = 1
-        submitter.submit(entity_map, submission_url='url')
-
-        # then:
-        submission_constructor.assert_called_with(ingest_api, 'url')
-        submission.define_manifest.assert_called_with(entity_map)
-        submission.add_entity.assert_has_calls(
-                [call(user), call(linked_product)], any_order=True)
-        submission.link_entity.assert_called_with(linked_product, user,
-                                                  relationship='wish_list')
-        ingest_api.patch.assert_called_once()
-
     @staticmethod
     def _mock_submission(submission_constructor):
         submission = MagicMock('submission')
