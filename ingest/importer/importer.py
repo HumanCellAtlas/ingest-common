@@ -144,7 +144,7 @@ class _ImportRegistry:
             type_map = {}
             self._submittable_registry[domain_type] = type_map
         if domain_type.lower() == _PROJECT_TYPE:
-            if not type_map.get(_PROJECT_ID):
+            if not type_map.get(self.project_id):
                 metadata.object_id = metadata.object_id or self.project_id
                 self.project_id = metadata.object_id
             else:
