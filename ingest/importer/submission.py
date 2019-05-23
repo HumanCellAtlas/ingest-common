@@ -67,6 +67,7 @@ class IngestSubmitter(object):
             else:
                 submission.add_entity(entity)
 
+
 class EntityLinker(object):
 
     def __init__(self, template_manager):

@@ -195,7 +195,7 @@ class WorkbookImporter:
             registry.add_submittable(project_metadata)
 
             importable_worksheets = [ws for ws in importable_worksheets
-                                        if _PROJECT_TYPE not in ws.title.lower()]
+                                     if _PROJECT_TYPE not in ws.title.lower()]
 
         for worksheet in importable_worksheets:
             metadata_entities = self.worksheet_importer.do_import(worksheet)

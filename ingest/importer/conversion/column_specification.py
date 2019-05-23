@@ -52,7 +52,6 @@ class ColumnSpecification:
     def is_external_reference(self):
         return self.external_reference
 
-    # TODO refactor
     def get_conversion_type(self):
         if self._represents_an_object_field():
             conversion_type = self._determine_conversion_type_for_object_field()
