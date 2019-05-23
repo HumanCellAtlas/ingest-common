@@ -75,11 +75,10 @@ class ColumnSpecification:
         return conversion_type
 
     def _determine_conversion_type_for_reference_field(self):
-        if self.external_reference:
-            if self.entity_type == self.context_concrete_type:
-                conversion_type = ConversionType.EXTERNAL_REFERENCE
-            else:
-                conversion_type = ConversionType.LINKED_EXTERNAL_REFERENCE
+        if self.external_reference and self.entity_type == self.context_concrete_type:
+            conversion_type = ConversionType.EXTERNAL_REFERENCE
+        elif self.external_reference and self.entity_type != self.context_concrete_type:
+            conversion_type = ConversionType.LINKED_EXTERNAL_REFERENCE
         elif self.identity:
             conversion_type = ConversionType.LINKED_IDENTITY
         else:

@@ -11,7 +11,8 @@ from ingest.importer.conversion.conversion_strategy import \
     DoNothing, LinkedExternalReferenceCellConversion, \
     LinkingDetailCellConversion, \
     FieldOfSingleElementListCellConversion, ExternalReferenceCellConversion
-from ingest.importer.conversion.data_converter import StringConverter, ListConverter
+from ingest.importer.conversion.data_converter import StringConverter, \
+    ListConverter, DefaultConverter
 from ingest.importer.conversion.exceptions import UnknownMainCategory
 from ingest.importer.conversion.metadata_entity import MetadataEntity
 
@@ -52,21 +53,27 @@ class ModuleTest(TestCase):
                                       expected_converter_type=ListConverter,
                                       and_also=self._assert_correct_main_category)
 
-    def test_determine_strategy_for_external_reference_field(self):
+    def test_determine_strategy_for_linked_external_reference_field(self):
         self._assert_correct_strategy(ConversionType.LINKED_EXTERNAL_REFERENCE,
                                       LinkedExternalReferenceCellConversion,
                                       expected_converter_type=ListConverter,
                                       and_also=self._assert_correct_main_category)
 
+    def test_determine_strategy_for_external_reference_field(self):
+        self._assert_correct_strategy(ConversionType.EXTERNAL_REFERENCE,
+                                      ExternalReferenceCellConversion)
+
     def _assert_correct_main_category(self, strategy: CellConversion):
         self.assertEqual('product_type', strategy.main_category)
 
     def _assert_correct_strategy(self, conversion_type, strategy_class,
-                                 expected_converter_type=None, and_also=None):
+                                 expected_converter_type=None,
+                                 and_also=None):
         # given:
         converter = MagicMock('converter')
         column_spec = _mock_column_spec(field_name='product.product_id',
-                                        main_category='product_type', converter=converter,
+                                        main_category='product_type',
+                                        converter=converter,
                                         conversion_type=conversion_type)
 
         # when:
