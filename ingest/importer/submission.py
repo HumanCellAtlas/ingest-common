@@ -62,13 +62,10 @@ class IngestSubmitter(object):
 
     def _add_or_update_entities(self, entities, submission):
         for entity in entities:
-            # TODO updating files is not supported yet
-            if entity.is_reference and entity.type != 'file':
-                if entity.content:
-                    submission.update_entity(entity)
+            if entity.is_reference:
+                submission.update_entity(entity)
             else:
                 submission.add_entity(entity)
-
 
 class EntityLinker(object):
 
@@ -304,6 +301,13 @@ class Submission(object):
         return entity
 
     def update_entity(self, entity: Entity):
+        # TODO updating files is not supported yet
+        # do not update if the content is None or empty
+        # content is empty for linked external references
+        # TODO consider adding an attribute for it instead of checking content
+        if not entity.content or entity.type == 'file':
+            return entity
+
         try:
             self._create_entity(entity, entity.id)
         except requests.HTTPError as e:
