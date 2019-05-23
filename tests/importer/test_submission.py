@@ -199,11 +199,11 @@ class IngestSubmitterTest(TestCase):
         submission = self._mock_submission(submission_constructor)
 
         # and:
-        product = Entity('product', 'product_1', {})
-        project = Entity('project', 'id', {})
-        user1 = Entity('user', 'user_1', {})
-        user2 = Entity('user', 'user_2', {}, is_reference=True)
-        user3 = Entity('user', 'user_3', {}, is_reference=True)
+        product = Entity('product', 'product_1', {'k': 'v'})
+        project = Entity('project', 'id', {'k': 'v'})
+        user1 = Entity('user', 'user_1', {'k': 'v'})
+        user2 = Entity('user', 'user_2', {'k': 'v'}, is_reference=True)
+        user3 = Entity('user', 'user_3', {'k': 'v'}, is_reference=True)
         entity_map = EntityMap(product, user1, user2, user3, project)
 
         # when:

@@ -62,16 +62,12 @@ class IngestSubmitter(object):
 
     def _add_or_update_entities(self, entities, submission):
         for entity in entities:
-            try:
-                if entity.is_reference:
-                    if entity.type != 'file':  # TODO updating files is not supported yet
-                        submission.update_entity(entity)
-                else:
-                    submission.add_entity(entity)
-            except Exception as e:
-                error_message = f'error ({str(e)}) in entity [{entity.type}]:\n{entity.content}'
-                self.logger.error(error_message)
-                raise
+            # TODO updating files is not supported yet
+            if entity.is_reference and entity.type != 'file':
+                if entity.content:
+                    submission.update_entity(entity)
+            else:
+                submission.add_entity(entity)
 
 
 class EntityLinker(object):
@@ -304,7 +300,7 @@ class Submission(object):
         return self.submission_url
 
     def add_entity(self, entity: Entity):
-        response = self._create_entity(entity)
+        self._create_entity(entity)
         return entity
 
     def update_entity(self, entity: Entity):
@@ -312,7 +308,7 @@ class Submission(object):
             self._create_entity(entity, entity.id)
         except requests.HTTPError as e:
             if e.response.status_code == requests.codes.bad_request:  # Bad Request
-                self.logger.warning(f'Failed to create entity as there is no diff. {e.response.text}')
+                self.logger.warning(f'Failed to create update entity as there is no diff. {e.response.text}')
             else:
                 raise
         return entity
