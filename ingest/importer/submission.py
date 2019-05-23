@@ -302,17 +302,16 @@ class Submission(object):
 
     def update_entity(self, entity: Entity):
         # TODO updating files is not supported yet
-        # do not update if the content is None or empty
+        # Do not update if the content is None or empty
         # content is empty for linked external references
-        # TODO consider adding an attribute for it instead of checking content
-        if not entity.content or entity.type == 'file':
-            return entity
-
+        # TODO consider adding an attribute rather than checking content
         try:
-            self._create_entity(entity, entity.id)
+            if entity.content and entity.type != 'file':
+                self._create_entity(entity, entity.id)
         except requests.HTTPError as e:
-            if e.response.status_code == requests.codes.bad_request:  # Bad Request
-                self.logger.warning(f'Failed to create update entity as there is no diff. {e.response.text}')
+            error = f'Failed to create update entity: {e.response.text}'
+            if e.response.status_code == requests.codes.bad_request:
+                self.logger.warning(error)
             else:
                 raise
         return entity
