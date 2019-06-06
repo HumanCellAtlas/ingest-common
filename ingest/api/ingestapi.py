@@ -59,7 +59,7 @@ class IngestApi:
             r = requests.get(search_url, headers=self.headers)
             if r.status_code == requests.codes.ok:
                 response_j = json.loads(r.text)
-                all_schemas = list(self.getRelatedEntities("latestSchemas", response_j, "schemas"))
+                all_schemas = list(self.get_related_entities("latestSchemas", response_j, "schemas"))
         else:
             all_schemas = list(self.getEntities(schema_url, "schemas"))
 
@@ -119,10 +119,10 @@ class IngestApi:
         else:
             raise ValueError("Project " + id + " could not be retrieved")
 
-    def getProjectByUuid(self, uuid):
-        return self.getEntityByUuid('projects', uuid)
+    def get_project_by_uuid(self, uuid):
+        return self.get_entity_by_uuid('projects', uuid)
 
-    def getEntityByUuid(self, entity_type, uuid):
+    def get_entity_by_uuid(self, entity_type, uuid):
         url = self.url + f'/{entity_type}/search/findByUuid?uuid=' + uuid
 
         # TODO make the endpoint consistent
@@ -273,36 +273,30 @@ class IngestApi:
     def getAnalyses(self, submissionUrl):
         return self.getEntities(submissionUrl, "analyses")
 
-    def getEntities(self, submissionUrl, entityType, pageSize=None):
+    def getEntities(self, submissionUrl, entityType):
         r = requests.get(submissionUrl, headers=self.headers)
         if r.status_code == requests.codes.ok:
             if entityType in json.loads(r.text)["_links"]:
-                if not pageSize:
-                    yield from self._getAllObjectsFromSet(json.loads(r.text)["_links"][entityType]["href"], entityType)
-                else:
-                    yield from self._getAllObjectsFromSet(json.loads(r.text)["_links"][entityType]["href"], entityType,
-                                                          pageSize)
+                yield from self._get_all(json.loads(r.text)["_links"][entityType]["href"], entityType)
 
-    def _getAllObjectsFromSet(self, url, entityType, pageSize=None):
-        params = dict()
-        if pageSize:
-            params = {"size": pageSize}
-
-        r = requests.get(url, headers=self.headers, params=params)
+    def _get_all(self, url, entity_type):
+        r = requests.get(url, headers=self.headers)
         r.raise_for_status()
         if r.status_code == requests.codes.ok:
-            if "_embedded" in json.loads(r.text):
-                for entity in json.loads(r.text)["_embedded"][entityType]:
+            if "_embedded" in r.json():
+                for entity in r.json()["_embedded"][entity_type]:
                     yield entity
-                if "next" in json.loads(r.text)["_links"]:
-                    for entity2 in self._getAllObjectsFromSet(json.loads(r.text)["_links"]["next"]["href"], entityType):
-                        yield entity2
+                while "next" in r.json()["_links"]:
+                    r = requests.get(r.json()["_links"]["next"]["href"],
+                                     headers=self.headers)
+                    for entity in r.json()["_embedded"][entity_type]:
+                        yield entity
 
-    def getRelatedEntities(self, relation, entity, entityType):
+    def get_related_entities(self, relation, entity, entity_type):
         # get the self link from entity
         if relation in entity["_links"]:
-            entityUri = entity["_links"][relation]["href"]
-            for entity in self._getAllObjectsFromSet(entityUri, entityType):
+            entity_uri = entity["_links"][relation]["href"]
+            for entity in self._get_all(entity_uri, entity_type):
                 yield entity
 
     def _updateStatusToPending(self, submissionUrl):
