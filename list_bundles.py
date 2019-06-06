@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-python list_bundle.py --project-uuid=b6dc9b93-929a-45d0-beb2-5cf8e64872fe --env=prod
+python list_bundles.py --project-uuid=b6dc9b93-929a-45d0-beb2-5cf8e64872fe --env=prod
 """
 
 import json
