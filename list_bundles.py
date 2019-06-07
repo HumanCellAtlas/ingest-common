@@ -26,6 +26,7 @@ class BundleTracker:
             for bundle_manifest in bundle_manifests:
                 yield bundle_manifest
 
+    iter_rows
     def generate_bundle_fqids(self, project_uuid):
         bundle_fqids = []
         for bundle in self.get_bundles(project_uuid):
@@ -42,7 +43,7 @@ if __name__ == '__main__':
 
     parser = OptionParser()
     parser.add_option("-p", "--project-uuid", help="Project UUID")
-    parser.add_option("-e", "--env", help="Project UUID")
+    parser.add_option("-e", "--env", help="dev|integration|staging|prod")
     parser.add_option("-o", "--output-file", help="Output filename")
     (options, args) = parser.parse_args()
 
@@ -67,4 +68,4 @@ if __name__ == '__main__':
         json.dump(fqids, outfile, indent=4)
 
     print(f'Total bundle count: {len(fqids)}')
-    print(f'Saved into file:{filename}')
+    print(f'Saved into file: {filename}')
