@@ -282,15 +282,21 @@ class IngestApi:
     def _get_all(self, url, entity_type):
         r = requests.get(url, headers=self.headers)
         r.raise_for_status()
-        if r.status_code == requests.codes.ok:
-            if "_embedded" in r.json():
-                for entity in r.json()["_embedded"][entity_type]:
-                    yield entity
-                while "next" in r.json()["_links"]:
-                    r = requests.get(r.json()["_links"]["next"]["href"],
-                                     headers=self.headers)
-                    for entity in r.json()["_embedded"][entity_type]:
-                        yield entity
+        result = r.json()
+
+        count = result.get('page', {}).get('totalElements', 0)
+        entities = result["_embedded"][entity_type] if count > 0 else []
+        yield from entities
+        self.logger.debug(f"GET {entity_type} {json.dumps(result['page'])}")
+
+        while "next" in result["_links"]:
+            next_url = result["_links"]["next"]["href"]
+            r = requests.get(next_url, headers=self.headers)
+            r.raise_for_status()
+            result = r.json()
+            entities = result["_embedded"][entity_type]
+            yield from entities
+            self.logger.debug(f"GET {entity_type} {json.dumps(result['page'])}")
 
     def get_related_entities(self, relation, entity, entity_type):
         # get the self link from entity
