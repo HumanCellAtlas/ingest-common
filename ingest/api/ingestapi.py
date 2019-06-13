@@ -277,9 +277,9 @@ class IngestApi:
         r = requests.get(submissionUrl, headers=self.headers)
         if r.status_code == requests.codes.ok:
             if entityType in json.loads(r.text)["_links"]:
-                yield from self._get_all(json.loads(r.text)["_links"][entityType]["href"], entityType)
+                yield from self.get_all(json.loads(r.text)["_links"][entityType]["href"], entityType)
 
-    def _get_all(self, url, entity_type):
+    def get_all(self, url, entity_type):
         r = requests.get(url, headers=self.headers)
         r.raise_for_status()
         result = r.json()
@@ -302,7 +302,7 @@ class IngestApi:
         # get the self link from entity
         if relation in entity["_links"]:
             entity_uri = entity["_links"][relation]["href"]
-            for entity in self._get_all(entity_uri, entity_type):
+            for entity in self.get_all(entity_uri, entity_type):
                 yield entity
 
     def _updateStatusToPending(self, submissionUrl):
