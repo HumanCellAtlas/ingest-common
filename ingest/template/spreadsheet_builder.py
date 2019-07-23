@@ -50,6 +50,9 @@ class SpreadsheetBuilder():
                                     that contains a list of metadata schemas that were used to create the spreadsheet.
         """
 
+        print(
+            f"In generate spreadsheet, arguments are, schema urls: {schema_urls}, tabs template: {tabs_template}, "
+            f"include_schema_tab: {include_schemas_tab}")
         self.include_schemas_tab = include_schemas_tab
         if tabs_template and schema_urls:
             tabs_parser = TabConfig()
