@@ -80,7 +80,7 @@ class ExporterTest(TestCase):
 
     def test_export_update(self):
         # given:
-        ingest_api = Mock(name='ingest_api')
+        ingest_api = Mock(name='mock_ingest_api')
         metadata_service = Mock(name='metadata_service')
         staging_service = Mock(name='staging_service')
         bundle_service = Mock(name='bundle_servie')
