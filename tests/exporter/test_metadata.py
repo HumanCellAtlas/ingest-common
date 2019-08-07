@@ -10,12 +10,14 @@ class MetadataResourceTest(TestCase):
     def test_provenance_from_dict(self):
         # given:
         uuid_value = '3f3212da-d5d0-4e55-b31d-83243fa02e0d'
-        data = {'uuid': {'uuid': uuid_value},
-                'submissionDate': 'a submission date',
-                'updateDate': 'an update date',
-                'content': {
-                    'describedBy': 'https://some-schema/1.2.3'
-                }}
+        data = {
+            'uuid': {'uuid': uuid_value},
+            'submissionDate': 'a submission date',
+            'updateDate': 'an update date',
+            'content': {
+                'describedBy': 'https://some-schema/1.2.3'
+            }
+        }
 
         # when:
         metadata_provenance = MetadataResource.provenance_from_dict(data)
