@@ -3,15 +3,11 @@
 A generic executor class to generate empty spreadsheets based on a set of metadata schemas.
 """
 
-import sys  # DELETE
 from argparse import ArgumentParser
-
-sys.path.insert(0, '/Users/arathimani/CZI/ingest-client/')  # noqa # DELETE
-
-from .spreadsheet_builder_constants import DEFAULT_AUTOFILL_SCALE, DEFAULT_LINK_CONFIG, DEFAULT_SCHEMA_LIST
 
 from ingest.template.linked_spreadsheet_builder import LinkedSpreadsheetBuilder
 from ingest.template.vanilla_spreadsheet_builder import VanillaSpreadsheetBuilder
+from .spreadsheet_builder_constants import DEFAULT_AUTOFILL_SCALE, DEFAULT_LINK_CONFIG, DEFAULT_SCHEMA_LIST
 
 
 def execute_spreadsheet_building(output_file_name, hide_row=False, linked_spreadsheet=False, schema_urls=None,
