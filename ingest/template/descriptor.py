@@ -51,7 +51,7 @@ class SimplePropertyDescriptor(Descriptor):
 
     def __init__(self, json_data):
         """ Initialize the simply property descriptor using the top level fields in given json data. """
-        self.value_type = json_data["type"] if "type" in json_data else None
+        self.value_type = json_data.get("type")
         self.multivalue = False
 
         if self.value_type == "array":
@@ -59,12 +59,12 @@ class SimplePropertyDescriptor(Descriptor):
             # Get the type of elements in the array which is nested inside the "items" key.
             self.value_type = json_data["items"]["type"]
 
-        self.format = json_data["format"] if "format" in json_data else None
+        self.format = json_data.get("format")
         self.external_reference = False
-        self.user_friendly = json_data["user_friendly"] if "user_friendly" in json_data else None
-        self.description = json_data["description"] if "description" in json_data else None
-        self.example = json_data["example"] if "example" in json_data else None
-        self.guidelines = json_data["guidelines"] if "guidelines" in json_data else None
+        self.user_friendly = json_data.get("user_friendly")
+        self.description = json_data.get("description")
+        self.example = json_data.get("example")
+        self.guidelines = json_data.get("guidelines")
 
         # For now, required and identifiable are set to false because the value of these properties exist in the
         # parent metadata schema and not in the property description itself. They will be back-populated later.
@@ -95,7 +95,7 @@ class ComplexPropertyDescriptor(SimplePropertyDescriptor, Descriptor):
             self.schema = None
 
         # Add required fields
-        self.required_properties = json_data["required"] if "required" in json_data.keys() else None
+        self.required_properties = json_data.get("required")
 
         # Add children properties
         self.children_properties = {}

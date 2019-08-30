@@ -2,6 +2,8 @@ import json
 import urllib
 from datetime import datetime
 
+import requests
+
 from ingest.api.ingestapi import IngestApi
 from .exceptions import RootSchemaException, UnknownKeySchemaException
 from .migration_dictionary import MigrationDictionary
@@ -14,7 +16,7 @@ class NewSchemaTemplate():
 
     def __init__(self, ingest_api_url="http://api.ingest.dev.data.humancellatlas.org",
                  migrations_url="https://schema.dev.data.humancellatlas.org/property_migrations",
-                 metadata_schema_urls=[], json_schema_docs=[], tab_config=None, property_migrations=None):
+                 metadata_schema_urls=None, json_schema_docs=None, tab_config=None, property_migrations=None):
         """ Creates and empty/default dictionary containing the following information:
         1) template_version:  A string keeping track of the version of the TopLevelSchemaDescriptor that is being used
         in case the components of this dictionary changes over time.
@@ -192,8 +194,7 @@ class NewSchemaTemplate():
         metadata_schema_objs = []
         for uri in self.metadata_schema_urls:
             try:
-                with urllib.request.urlopen(uri) as url:
-                    metadata_schema_objs.append(json.loads(url.read().decode()))
+                metadata_schema_objs.append(requests.get(url=uri).json())
             except Exception:
                 raise RootSchemaException(f"Was unable to read metadata schema JSON at {uri}")
         return metadata_schema_objs

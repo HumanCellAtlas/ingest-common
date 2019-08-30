@@ -117,5 +117,3 @@ class TestNewSchemaTemplate(unittest.TestCase):
 
         with self.assertRaisesRegex(UnknownKeySchemaException, "Cannot find key"):
             schema_template.lookup_property_attributes_in_metadata("timecourse.unit")
-
-    def test__
