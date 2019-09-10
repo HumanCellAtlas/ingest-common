@@ -1,4 +1,3 @@
-import json
 from datetime import datetime
 
 import requests
@@ -175,13 +174,8 @@ class NewSchemaTemplate():
         :return: A YAML object representing the metadata schemas encapsulated in this SchemaTemplate object.
         """
 
-        if tabs_only:
-            json_dump = json.dumps({"tabs": self.tabs}, indent=4)
-        else:
-            json_dump = json.dumps(self.get_dictionary_representation(), indent=4)
-
         yaml.default_flow_style = False
-        return yaml.dump(yaml.load(json_dump, Loader=yaml.FullLoader))
+        return yaml.dump({"tabs": self.tabs} if tabs_only else self.get_dictionary_representation(), indent=4)
 
     def _validate_fully_qualified_key_exists(self, fully_qualified_key):
         return fully_qualified_key in self.labels
