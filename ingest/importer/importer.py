@@ -249,7 +249,7 @@ class WorksheetImporter:
         records = []
         worksheet_errors = []
         try:
-            row_template = self.template.create_row_template(ingest_worksheet)
+            row_template, worksheet_errors = self.template.create_row_template(ingest_worksheet)
             rows = ingest_worksheet.get_data_rows()
             for index, row in enumerate(rows):
                 metadata, row_errors = row_template.do_import(row)
@@ -287,6 +287,7 @@ class SheetNotFoundInSchemas(Exception):
     def __init__(self, sheet):
         message = f'The sheet {sheet} was not found in the list of schemas.'
         super(SheetNotFoundInSchemas, self).__init__(message)
+        self.sheet = sheet
 
 
 class SchemaRetrievalError(Exception):

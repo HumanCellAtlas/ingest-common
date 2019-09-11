@@ -90,27 +90,28 @@ class TemplateManagerTest(TestCase):
         # and: prepare worksheet
         header_row_idx = 4
         workbook = Workbook()
-        worksheet = workbook.create_sheet('sample')
-        worksheet[f'A{header_row_idx}'] = 'user.profile.first_name'
-        worksheet[f'B{header_row_idx}'] = 'numbers'
+        worksheet = workbook.create_sheet('user')
+        worksheet[f'A{header_row_idx}'] = 'user.first_name'
+        worksheet[f'B{header_row_idx}'] = 'user.numbers'
 
         ingest_worksheet = IngestWorksheet(worksheet, header_row_idx=header_row_idx)
 
         # when:
         template_manager = TemplateManager(template, ingest_api)
-        row_template: RowTemplate = template_manager.create_row_template(ingest_worksheet)
+        row_template, template_errors = template_manager.create_row_template(ingest_worksheet)
 
         # then:
         expected_calls = [
-            call(template, 'user.profile.first_name', concrete_type, context=concrete_type,
+            call(template, 'user.first_name', concrete_type, context=concrete_type,
                  order_of_occurrence=1),
-            call(template, 'numbers', concrete_type, context=concrete_type, order_of_occurrence=1)
+            call(template, 'user.numbers', concrete_type, context=concrete_type, order_of_occurrence=1)
         ]
         look_up.assert_has_calls(expected_calls)
         determine_strategy.assert_has_calls([call(name_column_spec), call(numbers_column_spec)])
 
         # and:
         self.assertIsNotNone(row_template)
+        self.assertEqual(template_errors, [])
         self.assertEqual('main_category', row_template.domain_type)
         self.assertEqual(concrete_type, row_template.concrete_type)
         self.assertEqual(2, len(row_template.cell_conversions))
@@ -127,7 +128,7 @@ class TemplateManagerTest(TestCase):
         # and:
         schema_url = 'http://schema.sample.com/profile'
         self._mock_schema_lookup(schema_template, schema_url=schema_url, main_category='profile',
-                                 object_type='profile_type')
+                                 object_type='profile')
 
         # and:
         look_up.return_value = MagicMock('column_spec')
@@ -142,11 +143,12 @@ class TemplateManagerTest(TestCase):
         # when:
         template_manager = TemplateManager(schema_template, ingest_api)
         template_manager.get_schema_url = MagicMock(return_value=schema_url)
-        row_template = template_manager.create_row_template(ingest_worksheet)
+        row_template, template_errors = template_manager.create_row_template(ingest_worksheet)
 
         # then:
         content_defaults = row_template.default_values
         self.assertIsNotNone(content_defaults)
+        self.assertEqual(template_errors, [])
         self.assertEqual(schema_url, content_defaults.get('describedBy'))
         self.assertEqual('profile', content_defaults.get('schema_type'))
 
@@ -173,8 +175,8 @@ class TemplateManagerTest(TestCase):
 
         # and:
         workbook = create_test_workbook('Product - Reviews')
-        reviews_worksheet = workbook.get_sheet_by_name('Product - Reviews')
-        reviews_worksheet['A4'] = 'product.info.id'
+        reviews_worksheet = workbook['Product - Reviews']
+        reviews_worksheet['A4'] = 'product.reviews.id'
         reviews_worksheet['B4'] = 'product.reviews.rating'
 
         # and: set up dummy look up results
@@ -190,11 +192,11 @@ class TemplateManagerTest(TestCase):
         }.get
 
         # when:
-        row_template = template_mgr.create_row_template(IngestWorksheet(reviews_worksheet))
+        row_template, template_errors = template_mgr.create_row_template(IngestWorksheet(reviews_worksheet))
 
         # then:
         expected_calls = [
-            call(template, 'product.info.id', concrete_type, order_of_occurrence=1,
+            call(template, 'product.reviews.id', concrete_type, order_of_occurrence=1,
                  context='product.reviews'),
             call(template, 'product.reviews.rating', concrete_type, order_of_occurrence=1,
                  context='product.reviews')
@@ -203,6 +205,7 @@ class TemplateManagerTest(TestCase):
 
         # and:
         self.assertIsNotNone(row_template)
+        self.assertEqual(template_errors, [])
         self.assertIn(id_strategy, row_template.cell_conversions)
         self.assertIn(rating_strategy, row_template.cell_conversions)
 
@@ -227,10 +230,11 @@ class TemplateManagerTest(TestCase):
 
         # when:
         template_manager = TemplateManager(schema_template, ingest_api)
-        row_template = template_manager.create_row_template(ingest_worksheet)
+        row_template, template_errors = template_manager.create_row_template(ingest_worksheet)
 
         # then:
         self.assertEqual(0, len(row_template.cell_conversions))
+        self.assertEqual(template_errors, [])
 
     @staticmethod
     def _mock_schema_lookup(schema_template, schema_url='', object_type='', main_category=None):

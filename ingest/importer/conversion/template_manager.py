@@ -30,6 +30,7 @@ class TemplateManager:
         return data_node
 
     def create_row_template(self, ingest_worksheet: IngestWorksheet):
+        errors = []
         concrete_type = self.get_concrete_type(ingest_worksheet.title)
         domain_type = self.get_domain_type(concrete_type)
         column_headers = ingest_worksheet.get_column_headers()
@@ -38,6 +39,9 @@ class TemplateManager:
         context = self._determine_context(concrete_type, ingest_worksheet)
         header_counter = {}
         for header in column_headers:
+            if not header.startswith(context):
+                error = InvalidSheetHeader(ingest_worksheet.title, header, context)
+                errors.append({"location": f'column_header={header}', "type": error.__class__.__name__, "detail": str(error)})
             if not header_counter.get(header):
                 header_counter[header] = 0
             header_counter[header] = header_counter[header] + 1
@@ -50,7 +54,7 @@ class TemplateManager:
 
         default_values = self._define_default_values(concrete_type)
         return RowTemplate(domain_type, concrete_type, cell_conversions,
-                           default_values=default_values)
+                           default_values=default_values), errors
 
     @staticmethod
     def _determine_context(concrete_type, ingest_worksheet):
@@ -187,12 +191,19 @@ class ParentFieldNotFound(Exception):
     def __init__(self, header_name):
         message = f'{header_name} has no parent field'
         super(ParentFieldNotFound, self).__init__(message)
-
         self.header_name = header_name
 
 
 class InvalidTabName(Exception):
-
     def __init__(self, tab_name):
         super(InvalidTabName, self).__init__(f'Invalid tab name [{tab_name}]')
         self.tab_name = tab_name
+
+
+class InvalidSheetHeader(Exception):
+    def __init__(self, sheet_name, header_name, correct_context):
+        message = f'Invalid column header {header_name}. Headers on {sheet_name} should begin {correct_context}'
+        super(InvalidSheetHeader, self).__init__(message)
+        self.sheet_name = sheet_name
+        self.header_name = header_name
+        self.correct_contect = correct_context
