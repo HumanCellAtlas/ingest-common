@@ -211,7 +211,7 @@ class WorkbookImporter:
                 else:
                     registry.add_submittables(metadata_entities)
             except Exception as e:
-                workbook_errors.append({"location": "File", "type": e.__class__.__name__, "detail": str(e)})
+                workbook_errors.append({"location": f'sheet={worksheet.title}', "type": e.__class__.__name__, "detail": str(e)})
 
         if registry.has_project():
             registry.import_modules()
