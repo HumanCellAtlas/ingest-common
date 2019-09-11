@@ -209,6 +209,45 @@ class TemplateManagerTest(TestCase):
         self.assertIn(id_strategy, row_template.cell_conversions)
         self.assertIn(rating_strategy, row_template.cell_conversions)
 
+    @patch.object(column_specification, 'look_up')
+    @patch.object(conversion_strategy, 'determine_strategy')
+    def test_row_template_invalid_header(self, determine_strategy, look_up):
+        # given:
+        schema_template = MagicMock(name='schema_template')
+        ingest_api = MagicMock(name='mock_ingest_api')
+        schema_template.get_tab_key = MagicMock(return_value='user')
+
+        # and:
+        spec_map = {
+            'user': {'schema': {'domain_entity': 'main_category/subdomain'}}
+        }
+        schema_template.lookup = lambda key: spec_map.get(key, None)
+
+        # and: set up column spec
+        look_up.return_value = MagicMock(name='name_column_spec')
+        determine_strategy.return_value = MagicMock('name_strategy')
+
+        # and: prepare worksheet
+        header_row_idx = 4
+        workbook = Workbook()
+        worksheet = workbook.create_sheet('user')
+        worksheet[f'A{header_row_idx}'] = 'not_user.first_name'
+
+        ingest_worksheet = IngestWorksheet(worksheet, header_row_idx=header_row_idx)
+
+        # when:
+        template_manager = TemplateManager(schema_template, ingest_api)
+        row_template, template_errors = template_manager.create_row_template(ingest_worksheet)
+
+        # and:
+        expected_error = {
+            'location': 'column_header=not_user.first_name',
+            'type': 'InvalidSheetHeader',
+            'detail': 'Invalid column header not_user.first_name. Headers on user should begin user'
+        }
+        self.assertIsNotNone(row_template)
+        self.assertIn(expected_error, template_errors)
+
     @patch.object(conversion_strategy, 'determine_strategy')
     def test_create_row_template_with_none_header(self, determine_strategy):
         # given:
