@@ -282,10 +282,12 @@ class NoProjectFound(Exception):
         message = f'The spreadsheet should be associated to a project.'
         super(NoProjectFound, self).__init__(message)
 
+
 class SheetNotFoundInSchemas(Exception):
     def __init__(self, sheet):
         message = f'The sheet {sheet} was not found in the list of schemas.'
         super(SheetNotFoundInSchemas, self).__init__(message)
+
 
 class SchemaRetrievalError(Exception):
     pass
