@@ -6,6 +6,8 @@ schema.
 
 import re
 
+IDENTIFIABLE_PROPERTIES = ["biomaterial_id", "process_id", "protocol_id", "file_name"]
+
 
 class Descriptor():
     """ Parent class type. A Descriptor type encapsulate a small isolated amount of information about a portion of a
@@ -60,7 +62,7 @@ class SimplePropertyDescriptor(Descriptor):
             self.value_type = json_data["items"]["type"]
 
         self.format = json_data.get("format")
-        self.external_reference = False
+        self.external_reference = json_data.get("external_reference", False)
         self.user_friendly = json_data.get("user_friendly")
         self.description = json_data.get("description")
         self.example = json_data.get("example")
@@ -109,6 +111,11 @@ class ComplexPropertyDescriptor(SimplePropertyDescriptor, Descriptor):
                 # Make it required if the child property name is in the list of required properties
                 if self.required_properties and property_name in self.required_properties:
                     child_property_descriptor.required = True
+
+                # Make the property identifiable if the child property name is one of the listed hardcoded
+                # identifiable properties
+                if property_name in IDENTIFIABLE_PROPERTIES:
+                    child_property_descriptor.identifiable = True
 
                 self.children_properties[property_name] = child_property_descriptor
 
