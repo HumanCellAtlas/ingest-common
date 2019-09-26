@@ -101,7 +101,7 @@ class TemplateManager:
         if not result:
             raise InvalidTabName(title)
         main_label = result.group('main_label')
-        return self.template.lookup_fully_qualified_property_path_given_tab_display_name(main_label)
+        return self.template.lookup_metadata_schema_name_given_title(main_label)
 
     def get_domain_type(self, concrete_type):
         """
@@ -127,13 +127,6 @@ class TemplateManager:
     def get_worksheet_domain_type(self, title):
         concrete_type = self.get_concrete_type(title)
         return self.get_domain_type(concrete_type)
-
-    def get_key_for_label(self, header_name, tab_name):
-        try:
-            key = self.template.lookup_fully_qualified_property_path_for_column_name_in_tab(header_name, tab_name)
-        except Exception:
-            self.logger.warning(f'{header_name} in "{tab_name}" tab is not found in schema template')
-        return key
 
     def lookup(self, header_name):
         try:

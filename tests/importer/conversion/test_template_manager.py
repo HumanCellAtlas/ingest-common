@@ -27,7 +27,7 @@ class TemplateManagerTest(TestCase):
     def test_create_template_node(self):
         # given:
         schema_template = MagicMock(name='schema_template')
-        schema_template.lookup_fully_qualified_property_path_given_tab_display_name = MagicMock(
+        schema_template.lookup_metadata_schema_name_given_title = MagicMock(
             return_value='concrete_entity')
 
         schema_url = 'https://schema.humancellatlas.org/type/biomaterial/5.1.0/donor_organsim'
@@ -72,7 +72,7 @@ class TemplateManagerTest(TestCase):
         domain_entity = "main_category/subdomain"
         schema_url = "http://schema.sample.com/main_category"
         template.get_tabs_config = MagicMock()
-        template.lookup_fully_qualified_property_path_given_tab_display_name = MagicMock(return_value=concrete_type)
+        template.lookup_metadata_schema_name_given_title = MagicMock(return_value=concrete_type)
         template.get_latest_schema = MagicMock(return_value=schema_url)
         schema = {
             "schema": {
@@ -135,7 +135,7 @@ class TemplateManagerTest(TestCase):
         domain_entity = "profile/profile_type"
         schema_url = "http://schema.sample.com/profile"
         schema_template.get_tabs_config = MagicMock()
-        schema_template.lookup_fully_qualified_property_path_given_tab_display_name = MagicMock(
+        schema_template.lookup_metadata_schema_name_given_title = MagicMock(
             return_value="profile_type")
         schema_template.get_latest_schema = MagicMock(return_value=schema_url)
         schema = {
@@ -180,11 +180,6 @@ class TemplateManagerTest(TestCase):
         template = MagicMock(name='schema_template')
         ingest_api = MagicMock(name='mock_ingest_api')
 
-        # TODO define method in SchemaTemplate that returns domain and concrete types #module-tabs
-        # and:
-        concrete_type = 'product'
-        template.lookup_fully_qualified_property_path_for_column_name_in_tab = MagicMock(return_value=concrete_type)
-
         # and:
         spec_map = {
             'product': {'schema': {'domain_entity': 'merchandise/product'}}
@@ -194,7 +189,7 @@ class TemplateManagerTest(TestCase):
         domain_entity = "merchandise/product"
         schema_url = "http://schema.sample.com/product"
         template.get_tabs_config = MagicMock()
-        template.lookup_fully_qualified_property_path_given_tab_display_name = MagicMock(
+        template.lookup_metadata_schema_name_given_title = MagicMock(
             return_value="product_type")
         template.get_latest_schema = MagicMock(return_value=schema_url)
         schema = {
@@ -269,7 +264,7 @@ class TemplateManagerTest(TestCase):
     @staticmethod
     def _mock_schema_lookup(schema_template, schema_url='', object_type='', main_category=None):
         schema_template.get_tabs_config = MagicMock()
-        schema_template.lookup_fully_qualified_property_path_given_tab_display_name = MagicMock(
+        schema_template.lookup_metadata_schema_name_given_title = MagicMock(
             return_value=object_type)
         schema_template.get_latest_schema = MagicMock(return_value=schema_url)
 
@@ -335,25 +330,25 @@ class TemplateManagerTest(TestCase):
     def test_get_concrete_type_of_regular_worksheet(self):
         # given
         schema_template = MagicMock(name='schema_template')
-        schema_template.lookup_fully_qualified_property_path_given_tab_display_name = MagicMock(
+        schema_template.lookup_metadata_schema_name_given_title = MagicMock(
             return_value='user_profile')
         manager = TemplateManager(schema_template, MagicMock(name='mock_ingest_api'))
 
         # expect:
         self.assertEqual('user_profile', manager.get_concrete_type('User Profile'))
-        schema_template.lookup_fully_qualified_property_path_given_tab_display_name.assert_called_with('User Profile')
+        schema_template.lookup_metadata_schema_name_given_title.assert_called_with('User Profile')
 
     def test_get_concrete_type_of_module_worksheet(self):
         # given:
         schema_template = MagicMock(name='schema_template')
-        schema_template.lookup_fully_qualified_property_path_given_tab_display_name = MagicMock(return_value='product')
+        schema_template.lookup_metadata_schema_name_given_title = MagicMock(return_value='product')
         manager = TemplateManager(schema_template, MagicMock(name='mock_ingest_api'))
 
         # expect:
         self.assertEqual('product', manager.get_concrete_type('Product - Barcodes'))
 
         # and:
-        schema_template.lookup_fully_qualified_property_path_given_tab_display_name.assert_called_with('Product')
+        schema_template.lookup_metadata_schema_name_given_title.assert_called_with('Product')
 
     def test_get_concrete_type_of_worksheet_invalid_format(self):
         # given:
