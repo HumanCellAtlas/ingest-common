@@ -58,11 +58,12 @@ class ColumnSpecificationTest(TestCase):
         column_specification = ColumnSpecification(self.schema_template, "someschema.protocol_id", "someschema")
 
         self.assertTrue(column_specification.is_identity())
+        self.assertTrue(column_specification.is_external_reference())
         self.assertEqual('someschema', column_specification.context_concrete_type)
         self.assertEqual('somedomain', column_specification.domain_type)
         self.assertEqual('someschema.protocol_id', column_specification.field_name)
         self.assertEqual(DataType.INTEGER, column_specification.data_type)
-        self.assertEqual(ConversionType.IDENTITY, column_specification.get_conversion_type())
+        self.assertEqual(ConversionType.EXTERNAL_REFERENCE, column_specification.get_conversion_type())
 
     def test__column_specification_creation_string_type__succeeds(self):
         column_specification = ColumnSpecification(self.schema_template, "someschema.value", "someschema",
@@ -116,14 +117,6 @@ class ColumnSpecificationTest(TestCase):
         self.assertFalse(column_specification.multivalue)
         self.assertTrue(column_specification.is_field_of_list_element())
         self.assertEqual(ConversionType.FIELD_OF_LIST_ELEMENT, column_specification.get_conversion_type())
-
-    def test_look_up_external_id(self):
-        column_specification = ColumnSpecification(self.schema_template, "someschema.external_reference_property",
-                                                   "someschema")
-
-        self.assertTrue(column_specification.is_external_reference())
-        self.assertEqual("someschema.external_reference_property", column_specification.field_name)
-        self.assertEqual(ConversionType.EXTERNAL_REFERENCE, column_specification.get_conversion_type())
 
     def test_look_up_unknown_header(self):
         sample_metadata_schema_json = {
@@ -209,10 +202,11 @@ class ColumnSpecificationTest(TestCase):
     def test_get_conversion_type_linked_identity(self):
         column_specification = ColumnSpecification(self.schema_template, "someschema.protocol_id", "someotherschema")
 
-        self.assertEqual(ConversionType.LINKED_IDENTITY, column_specification.get_conversion_type())
+        self.assertEqual(ConversionType.LINKED_EXTERNAL_REFERENCE,
+                         column_specification.get_conversion_type())
 
     def test_get_conversion_type_linked_external_reference_identity(self):
         column_specification = ColumnSpecification(self.schema_template, "someschema.external_reference_property",
                                                    "someotherschema")
 
-        self.assertEqual(ConversionType.LINKED_EXTERNAL_REFERENCE, column_specification.get_conversion_type())
+        self.assertEqual(ConversionType.LINKING_DETAIL, column_specification.get_conversion_type())

@@ -62,16 +62,17 @@ class SimplePropertyDescriptor(Descriptor):
             self.value_type = json_data["items"]["type"]
 
         self.format = json_data.get("format")
-        self.external_reference = json_data.get("external_reference", False)
         self.user_friendly = json_data.get("user_friendly")
         self.description = json_data.get("description")
         self.example = json_data.get("example")
         self.guidelines = json_data.get("guidelines")
 
-        # For now, required and identifiable are set to false because the value of these properties exist in the
-        # parent metadata schema and not in the property description itself. They will be back-populated later.
+        # For now, required, external_reference and identifiable are set to false because the value of these properties
+        # exist in the parent metadata schema and not in the property description itself. They will be back-populated
+        # later.
         self.required = False
         self.identifiable = False
+        self.external_reference = False
 
     def get_dictionary_representation_of_descriptor(self):
         """ Only include information in the class where the value is not None or empty OR if the value is a boolean
@@ -116,6 +117,7 @@ class ComplexPropertyDescriptor(SimplePropertyDescriptor, Descriptor):
                 # identifiable properties
                 if property_name in IDENTIFIABLE_PROPERTIES:
                     child_property_descriptor.identifiable = True
+                    child_property_descriptor.external_reference = True
 
                 self.children_properties[property_name] = child_property_descriptor
 
