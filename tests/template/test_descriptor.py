@@ -270,7 +270,7 @@ class TestDescriptor(unittest.TestCase):
         }
         expected_child_property_id_descriptor = {
             "description": "A random id.", "value_type": "string",
-            "multivalue": False, "external_reference": True, "user_friendly": "Protocol Id", "required": False,
+            "multivalue": False, "external_reference": False, "user_friendly": "Protocol Id", "required": False,
             "identifiable": True
         }
         expected_child_property_value_descriptor = {
