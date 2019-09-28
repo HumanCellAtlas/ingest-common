@@ -3,7 +3,7 @@ from unittest import TestCase
 from ingest.importer.conversion.column_specification import ColumnSpecification, ConversionType
 from ingest.importer.conversion.data_converter import BooleanConverter, DataType, DefaultConverter, IntegerConverter, \
     ListConverter, StringConverter
-from ingest.template.new_schema_template import NewSchemaTemplate
+from ingest.template.schema_template import SchemaTemplate
 
 
 class ColumnSpecificationTest(TestCase):
@@ -52,8 +52,8 @@ class ColumnSpecificationTest(TestCase):
         }
         sample_property_migrations = []
 
-        self.schema_template = NewSchemaTemplate(json_schema_docs=[sample_metadata_schema_json],
-                                                 property_migrations=sample_property_migrations)
+        self.schema_template = SchemaTemplate(json_schema_docs=[sample_metadata_schema_json],
+                                              property_migrations=sample_property_migrations)
 
     def test__column_specification_creation_identifiable__succeeds(self):
         column_specification = ColumnSpecification(self.schema_template, "someschema.protocol_id", "someschema")
@@ -108,8 +108,8 @@ class ColumnSpecificationTest(TestCase):
             }
         }
         sample_property_migrations = []
-        schema_template = NewSchemaTemplate(json_schema_docs=[nested_sample_metadata_schema_json],
-                                            property_migrations=sample_property_migrations)
+        schema_template = SchemaTemplate(json_schema_docs=[nested_sample_metadata_schema_json],
+                                         property_migrations=sample_property_migrations)
 
         column_specification = ColumnSpecification(schema_template,
                                                    "someschema.some_parent_property.some_child_property", "someschema")
@@ -117,6 +117,29 @@ class ColumnSpecificationTest(TestCase):
         self.assertFalse(column_specification.multivalue)
         self.assertTrue(column_specification.is_field_of_list_element())
         self.assertEqual(ConversionType.FIELD_OF_LIST_ELEMENT, column_specification.get_conversion_type())
+
+    def test_look_up_unknown_header(self):
+        sample_metadata_schema_json = {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "$id": "https://schema.humancellatlas.org/module//2.0.2/someschema",
+            "description": "Just a plain old test schema",
+            "required": [],
+            "type": "object",
+            "properties": {
+                "some_property": {
+                    "description": "Some property",
+                    "type": "string"
+                }
+            }
+        }
+        sample_property_migrations = []
+        schema_template = SchemaTemplate(json_schema_docs=[sample_metadata_schema_json],
+                                         property_migrations=sample_property_migrations)
+
+        column_specification = ColumnSpecification(schema_template, "someschema.some_unknown_property", "someschema")
+
+        self.assertIsNotNone(column_specification)
+        self.assertEqual(ColumnSpecification.UNKNOWN_DOMAIN_TYPE, column_specification.domain_type)
 
     def test_determine_converter_for_single_value(self):
         data_types_to_test = [DataType.BOOLEAN, DataType.INTEGER, DataType.STRING, DataType.UNDEFINED]
@@ -137,8 +160,8 @@ class ColumnSpecificationTest(TestCase):
                 }
             }
             sample_property_migrations = []
-            schema_template = NewSchemaTemplate(json_schema_docs=[sample_metadata_schema_json],
-                                                property_migrations=sample_property_migrations)
+            schema_template = SchemaTemplate(json_schema_docs=[sample_metadata_schema_json],
+                                             property_migrations=sample_property_migrations)
 
             column_specification = ColumnSpecification(schema_template, "someschema.some_property", "someschema")
 
@@ -166,8 +189,8 @@ class ColumnSpecificationTest(TestCase):
                 }
             }
             sample_property_migrations = []
-            schema_template = NewSchemaTemplate(json_schema_docs=[sample_metadata_schema_json],
-                                                property_migrations=sample_property_migrations)
+            schema_template = SchemaTemplate(json_schema_docs=[sample_metadata_schema_json],
+                                             property_migrations=sample_property_migrations)
 
             column_specification = ColumnSpecification(schema_template, "someschema.multivalue_property", "someschema")
 

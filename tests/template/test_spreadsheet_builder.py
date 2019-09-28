@@ -4,7 +4,7 @@ Description goes here
 """
 import os
 
-from ingest.template.new_schema_template import NewSchemaTemplate
+from ingest.template.schema_template import SchemaTemplate
 
 __author__ = "jupp"
 __license__ = "Apache 2.0"
@@ -37,7 +37,7 @@ class TestSchemaTemplate(TestCase):
 
         file = "foo.xlsx"
         spreadsheet_builder = VanillaSpreadsheetBuilder(file)
-        template = NewSchemaTemplate(json_schema_docs=[data], property_migrations=[])
+        template = SchemaTemplate(json_schema_docs=[data], property_migrations=[])
         spreadsheet_builder.build(template)
         spreadsheet_builder.save_spreadsheet()
 

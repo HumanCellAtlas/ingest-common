@@ -5,12 +5,12 @@ from sortedcontainers import SortedDict
 
 from ingest.template.descriptor import SimplePropertyDescriptor
 from ingest.template.exceptions import UnknownKeySchemaException
-from ingest.template.new_schema_parser import NewSchemaParser
-from ingest.template.new_schema_template import NewSchemaTemplate
+from ingest.template.schema_parser import SchemaParser
+from ingest.template.schema_template import SchemaTemplate
 
 
-class TestNewSchemaTemplate(unittest.TestCase):
-    """ Testing class for the NewSchemaTemplateclass. """
+class TestSchemaTemplate(unittest.TestCase):
+    """ Testing class for the SchemaTemplateclass. """
 
     def test__creation_of_template_with_urls_and_jsons__throws_exception(self):
         sample_schema_url = "https://schema.humancellatlas.org/bundle/5.0.0/biomaterial"
@@ -22,7 +22,7 @@ class TestNewSchemaTemplate(unittest.TestCase):
         with self.assertRaisesRegex(Exception,
                                     "Only one of function arguments metadata_schema_urls or json_schema_docs [^/]* "
                                     "may be populated"):
-            NewSchemaTemplate(metadata_schema_urls=[sample_schema_url], json_schema_docs=[sample_schema_json])
+            SchemaTemplate(metadata_schema_urls=[sample_schema_url], json_schema_docs=[sample_schema_json])
 
     def test__creation_of_template_with_json__success(self):
         sample_metadata_schema_json = {
@@ -50,11 +50,11 @@ class TestNewSchemaTemplate(unittest.TestCase):
             }
         }
 
-        schema_template = NewSchemaTemplate(json_schema_docs=[sample_metadata_schema_json])
+        schema_template = SchemaTemplate(json_schema_docs=[sample_metadata_schema_json])
 
         expected_schema_version = "1.0.0"
         expected_schema_metadata_properties = {
-            "timecourse": NewSchemaParser(sample_metadata_schema_json).schema_dictionary}
+            "timecourse": SchemaParser(sample_metadata_schema_json).schema_dictionary}
         expected_schema_labels = {"timecourse.value": ["timecourse.value"], "timecourse.unit": ["timecourse.unit"],
                                   "timecourse value": ["timecourse.value"], "timecourse unit": ["timecourse.unit"]}
         expected_schema_tabs = [{"timecourse": {"display_name": "Timecourse",
@@ -88,7 +88,7 @@ class TestNewSchemaTemplate(unittest.TestCase):
             }
         }
 
-        schema_template = NewSchemaTemplate(json_schema_docs=[sample_metadata_schema_json])
+        schema_template = SchemaTemplate(json_schema_docs=[sample_metadata_schema_json])
 
         expected_property_value = SimplePropertyDescriptor({
             "description": "The unit in which the Timecourse value is expressed.",
@@ -116,7 +116,7 @@ class TestNewSchemaTemplate(unittest.TestCase):
             }
         }
 
-        schema_template = NewSchemaTemplate(json_schema_docs=[sample_metadata_schema_json])
+        schema_template = SchemaTemplate(json_schema_docs=[sample_metadata_schema_json])
 
         with self.assertRaisesRegex(UnknownKeySchemaException, "Cannot find key"):
             schema_template.lookup_property_attributes_in_metadata("timecourse.unit")
@@ -148,8 +148,8 @@ class TestNewSchemaTemplate(unittest.TestCase):
             "type": "renamed property"
         }
 
-        schema_template = NewSchemaTemplate(json_schema_docs=[sample_metadata_schema_json],
-                                            property_migrations=[sample_property_migration])
+        schema_template = SchemaTemplate(json_schema_docs=[sample_metadata_schema_json],
+                                         property_migrations=[sample_property_migration])
 
         expected_replacement_key = "fancy_new_timecourse.fancy_new_value"
         self.assertEqual(schema_template.lookup_next_latest_key_migration("timecourse.value"), expected_replacement_key)
@@ -225,8 +225,8 @@ class TestNewSchemaTemplate(unittest.TestCase):
              "reason": "For fun",
              "type": "renamed property"}]
 
-        schema_template = NewSchemaTemplate(json_schema_docs=sample_metadata_schema_json,
-                                            property_migrations=sample_property_migration)
+        schema_template = SchemaTemplate(json_schema_docs=sample_metadata_schema_json,
+                                         property_migrations=sample_property_migration)
 
         expected_replacement_key = "extra_fancy_new_timecourse.extra_fancy_new_value"
         self.assertEqual(schema_template.lookup_absolute_latest_key_migration("timecourse.value"),
@@ -258,8 +258,8 @@ class TestNewSchemaTemplate(unittest.TestCase):
             "reason": "For fun",
             "type": "renamed property"
         }
-        schema_template = NewSchemaTemplate(json_schema_docs=[sample_metadata_schema_json],
-                                            property_migrations=[sample_property_migration])
+        schema_template = SchemaTemplate(json_schema_docs=[sample_metadata_schema_json],
+                                         property_migrations=[sample_property_migration])
 
         yaml_representation = schema_template.generate_yaml_representation_of_spreadsheets(tabs_only=True)
 
@@ -292,8 +292,8 @@ class TestNewSchemaTemplate(unittest.TestCase):
             "reason": "For fun",
             "type": "renamed property"
         }
-        schema_template = NewSchemaTemplate(json_schema_docs=[sample_metadata_schema_json],
-                                            property_migrations=[sample_property_migration])
+        schema_template = SchemaTemplate(json_schema_docs=[sample_metadata_schema_json],
+                                         property_migrations=[sample_property_migration])
 
         yaml_representation = schema_template.generate_yaml_representation_of_spreadsheets(tabs_only=False)
 
